@@ -1,29 +1,47 @@
 const multer = require("multer");
-const storage = multer.memoryStorage();
-const multerUploads = multer({ storage: storage });
+const { uploadOnCloudinary } = require("../utils/cloudinary");
 
-const dataUri = (files) => {
-  if (Array.isArray(files)) {
-    // Handle multiple files
-    if (files.length > 0) {
-      const dataUris = files.map((file) => {
-        return new Datauri().format(
-          path.extname(file.originalname).toString(),
-          file.buffer
-        );
-      });
-      return dataUris;
-    }
-  } else {
-    // Handle single file
-    if (files) {
-      return new Datauri().format(
-        path.extname(files.originalname).toString(),
-        files.buffer
+const upload = multer({ storage: multer.memoryStorage() });
+
+const fileUploadMiddleware = (req, res, next) => {
+  // Use upload.single() for single file upload and upload.array() for multiple file upload
+  const uploadMiddleware = req.files
+    ? upload.array("files")
+    : upload.single("file");
+
+  uploadMiddleware(req, res, async (err) => {
+    try {
+      if (err instanceof multer.MulterError) {
+        // A Multer error occurred when uploading
+        console.error("Multer error:", err);
+        return res.status(500).json({ message: "File upload failed" });
+      } else if (err) {
+        // An unknown error occurred
+        console.error("Unknown error:", err);
+        return res.status(500).json({ message: "File upload failed" });
+      }
+
+      // Check if files were uploaded
+      if (!req.files && !req.file) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      // Upload files to Cloudinary and get URLs
+      const fileUrls = await Promise.all(
+        (req.files || [req.file]).map(async (file) => {
+          const result = await uploadOnCloudinary(file.buffer, "uploads");
+          return { url: result.secure_url, publicId: result.public_id };
+        })
       );
+
+      // Attach file URLs to request object for further processing
+      req.fileUrls = fileUrls;
+      next();
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-  }
-  return null;
+  });
 };
 
-module.exports = { multerUploads, dataUri };
+module.exports = fileUploadMiddleware;

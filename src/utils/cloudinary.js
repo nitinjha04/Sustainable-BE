@@ -9,10 +9,10 @@ cloudinary.config({
 
 // TO upload the file to cloudinay
 
-const uploadOnCloudinary = async (localFilePath, folder) => {
+const uploadOnCloudinary = async (fileBuffer, folder) => {
   try {
-    if (!localFilePath) return null;
-    const response = await cloudinary.uploader.upload(localFilePath, {
+    if (!fileBuffer) return null;
+    const response = await cloudinary.uploader.upload(fileBuffer, {
       folder: folder,
       resource_type: "auto",
     });
@@ -28,13 +28,16 @@ const uploadOnCloudinary = async (localFilePath, folder) => {
 
 // To delete the file from cloudinary
 
-const deleteOnCloudinary = async (publicId) => {
+const deleteOnCloudinary = async (uploadFileId) => {
   try {
-    if (!publicId) return null;
-    const response = await cloudinary.api.delete_resources([`${publicId}`], {
-      type: "upload",
-      resource_type: "auto",
-    });
+    if (!uploadFileId) return null;
+    const response = await cloudinary.api.delete_resources(
+      [`${uploadFileId}`],
+      {
+        type: "upload",
+        resource_type: "auto",
+      }
+    );
     try {
       return response;
     } catch (error) {
