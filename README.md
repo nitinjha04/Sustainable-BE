@@ -51,6 +51,12 @@ cd Backend-Template
  GOOGLE_CLIENT_ID=
  GOOGLE_CLIENT_SECRET=
 
+# Cloudinary
+
+CLOUDINARY_API_SECRET=
+CLOUDINARY_API_KEY=
+CLOUDINARY_CLOUD_NAME=
+
 ```
 
 3. Start the server
