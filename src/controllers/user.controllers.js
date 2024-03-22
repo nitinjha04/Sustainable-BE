@@ -7,31 +7,44 @@ const { JWT_EMAIL_VERIFY_SECRET } = process.env;
 
 class UserController {
   createNewUser = async (req, res) => {
-    const user = await UserService.findOne({ email: req.body.email });
+    const checkUser = await UserService.findOne({ email: req.body.email });
 
-    if (user) {
+    if (checkUser) {
       throw new HttpError(401, "User Already Exists");
     }
 
-    const salt = await HasherHelper.getSalt(10);
+    const user = await UserService.create({ ...req.body });
 
-    const hash = await HasherHelper.hash(req.body.password, salt);
+    const { generateToken } = user.schema.methods;
 
-    req.body.password = hash;
+    const accessToken = generateToken({
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+    });
 
-    await UserService.create({ ...req.body });
-    Response(res).status(201).message("New user created").send();
+    const userRole = {
+      role: user.role,
+    };
+
+    Response(res)
+      .status(201)
+      .body({
+        accessToken,
+        userRole,
+      })
+      .send();
   };
   loginViaPassword = async (req, res, next) => {
     const { email, password } = req.body;
 
-    let user = await UserService.findOne({ email });
+    const user = await UserService.findOne({ email });
 
     if (!user) {
       throw new HttpError(404, "User Not Found");
     }
 
-    const { generateRefreshToken, generateToken } = user.schema.methods;
+    const { generateToken } = user.schema.methods;
 
     const isVerify = await HasherHelper.compare(password, user.password);
     if (!isVerify) throw new HttpError(401, "Invalid Credentials");
@@ -41,16 +54,11 @@ class UserController {
       email: user.email,
       role: user.role,
     });
-    const refreshToken = generateRefreshToken({
-      _id: user._id,
-      email: user.email,
-      role: user.role,
-    });
+
     Response(res)
       .status(201)
       .body({
         accessToken,
-        refreshToken,
         role: user.role,
       })
       .send();

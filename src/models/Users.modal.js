@@ -53,32 +53,20 @@ const Schema = new mongoose.Schema(
   }
 );
 
-// Schema.pre("validate", async function (next) {
-//   var user = this;
-//   // only hash the password if it has been modified (or is new)
-//   if (!user.isModified("password")) return next();
+Schema.pre("save", async function (next) {
+  let user = this;
+  // only hash the password if it has been modified (or is new)
+  if (!user.isModified("password")) return next();
 
-//   // generate a salt
-//   const salt = await Hasher.getSalt(10);
+  // generate a salt
+  const salt = await Hasher.getSalt(10);
 
-//   // hash the password using our new salt
-//   const hash = await Hasher.hash(user.password,salt);
+  // hash the password using our new salt
+  const hash = await Hasher.hash(user.password, salt);
 
-//   // override the cleartext password with the hashed one
-//   user.password = hash;
-//   next();
-// });
-
-const virtual = Schema.virtual("id");
-virtual.get(function () {
-  return this._id;
-});
-Schema.set("toJSON", {
-  virtuals: true,
-  versionKey: false,
-  transform: function (doc, ret) {
-    delete ret._id;
-  },
+  // override the cleartext password with the hashed one
+  user.password = hash;
+  next();
 });
 
 Schema.methods.comparePassword = function (candidatePassword) {
@@ -94,13 +82,6 @@ Schema.methods.generateToken = (data) => {
     { ...data },
     JWT_SECRET
     // JWT_EXPIRY
-  );
-};
-Schema.methods.generateRefreshToken = function (data) {
-  return jwt.sign(
-    { ...data },
-    JWT_REFRESH_SECRET
-    // JWT_REFRESH_EXPIRY
   );
 };
 Schema.methods.generateVerifyEmailToken = function () {
