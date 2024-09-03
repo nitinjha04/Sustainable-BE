@@ -5,7 +5,6 @@ const { UserService } = require("../services/user.service");
 const passport = require("passport");
 require("../passport/auth");
 
-
 class UserController {
   createNewUser = async (req, res) => {
     const checkUser = await UserService.findOne({ email: req.body.email });
@@ -120,8 +119,8 @@ class UserController {
 
     Response(res).body(user).send();
   };
-
-  google = async (req, res, next) => {
+  google = (req, res, next) => {
+    console.log("Initiating Google Authentication...");
     passport.authenticate("google", {
       scope: ["profile", "email"],
       session: false,
@@ -134,7 +133,8 @@ class UserController {
       { session: false },
       async (err, userinfo) => {
         if (err) {
-          return res.redirect("https://localhost:5173");
+          console.log({ err });
+          return res.redirect("https://sustainable-nature.vercel.app");
         }
 
         console.log({ userinfo });
@@ -160,8 +160,10 @@ class UserController {
           role: user.role,
         });
 
-        return res.redirect(`http://localhost:5173?token=${accessToken}`);
-        // return res.redirect(`http://localhost:3000/?token=${accessToken}`);
+        return res.redirect(
+          `https://sustainable-nature.vercel.app?token=${accessToken}`
+        );
+        // return res.redirect(`http://localhost:5173?token=${accessToken}`);
       }
     )(req, res, next);
   };
