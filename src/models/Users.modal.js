@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const Hasher = require("../helpers/Hasher.helper");
 const {
-  JWT_SECRET ,
+  JWT_SECRET,
   JWT_EXPIRY,
-  JWT_REFRESH_SECRET ,
+  JWT_REFRESH_SECRET,
   JWT_REFRESH_EXPIRY,
   JWT_EMAIL_VERIFY_SECRET,
 } = process.env;
@@ -20,12 +20,7 @@ const Schema = new mongoose.Schema(
       },
     },
     name: {
-      first: {
-        type: String,
-      },
-      last: {
-        type: String,
-      },
+      type: String,
     },
     email: {
       type: String,

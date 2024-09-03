@@ -9,22 +9,31 @@ cloudinary.config({
 
 // TO upload the file to cloudinay
 
-const uploadOnCloudinary = async (fileBuffer, folder) => {
-  try {
-    if (!fileBuffer) return null;
-    const response = await cloudinary.uploader.upload(fileBuffer, {
-      folder: folder,
-      resource_type: "auto",
-    });
-    try {
-      return response;
-    } catch (error) {
-      console.error(error);
+const uploadOnCloudinary = (fileBuffer, folder) => {
+  return new Promise((resolve, reject) => {
+    if (!fileBuffer) {
+      resolve(null);
+      return;
     }
-  } catch (error) {
-    return null;
-  }
+
+    cloudinary.uploader.upload_stream(
+      {
+        folder: folder,
+        resource_type: "auto",
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Upload error:", error);
+          reject(error);  // Reject the promise on error
+        } else {
+          // console.log("Upload result:", result);
+          resolve(result);  // Resolve the promise with the result
+        }
+      }
+    ).end(fileBuffer); // Send the buffer
+  });
 };
+
 
 // To delete the file from cloudinary
 

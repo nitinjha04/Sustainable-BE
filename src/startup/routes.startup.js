@@ -3,11 +3,20 @@ const express = require("express");
 const morgan = require("morgan"); // for consoling api request calls
 const helmet = require("helmet"); // secures connection by adding additional header
 const cors = require("cors"); // handling cors errors
+const multer = require("multer");
+
 const ErrorHandler = require("../middlewares/error.middlewares"); // error handler for routes, since we will continue to next route upon request
+const { uploadOnCloudinary } = require("../utils/cloudinary");
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+const uploadMiddleware = upload.single("file");
 const { default: axios } = require("axios");
 
 //Routers
 const { UserRouter } = require("../routes/users.routes");
+const { CommentRouter } = require("../routes/comment.routes");
+const { ContentRouter } = require("../routes/Content.routes");
 
 module.exports = (app) => {
   app.use(express.json({ limit: "9999000009mb" }));
@@ -18,6 +27,25 @@ module.exports = (app) => {
 
   //start of routes
   app.use("/api/users", UserRouter);
+  app.use("/api/comment", CommentRouter);
+  app.use("/api/content", ContentRouter);
+  app.post("/api/upload-image", uploadMiddleware, async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    try {
+      const result = await uploadOnCloudinary(req.file.buffer, "sustainable");
+      console.log({result})
+      res.json({
+        error: false,
+        message: "File uploaded successfully",
+        result: { url: result.url, publicId: result.public_id },
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error uploading file", error });
+    }
+  });
 
   // handling async errors in api routes
   app.use(ErrorHandler);

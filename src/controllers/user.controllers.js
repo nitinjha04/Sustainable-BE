@@ -3,11 +3,14 @@ const HasherHelper = require("../helpers/Hasher.helper");
 const HttpError = require("../helpers/HttpError.helpers");
 const Response = require("../helpers/Response.helpers");
 const { UserService } = require("../services/user.service");
+const { Passport } = require("passport");
 const { JWT_EMAIL_VERIFY_SECRET } = process.env;
 
 class UserController {
   createNewUser = async (req, res) => {
     const checkUser = await UserService.findOne({ email: req.body.email });
+
+    console.log(req.body.name);
 
     if (checkUser) {
       throw new HttpError(401, "User Already Exists");
@@ -23,15 +26,18 @@ class UserController {
       role: user.role,
     });
 
-    const userRole = {
+    const userData = {
+      email: user.email,
       role: user.role,
+      createdAt: user.createdAt,
+      name: user.name,
     };
 
     Response(res)
       .status(201)
       .body({
         accessToken,
-        userRole,
+        user: userData,
       })
       .send();
   };
@@ -47,7 +53,7 @@ class UserController {
     const { generateToken } = user.schema.methods;
 
     const isVerify = await HasherHelper.compare(password, user.password);
-    if (!isVerify) throw new HttpError(401, "Invalid Credentials");
+    if (!isVerify) throw new HttpError(401, "Incorrect Password");
 
     const accessToken = generateToken({
       _id: user._id,
@@ -55,11 +61,17 @@ class UserController {
       role: user.role,
     });
 
+    const userData = {
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      name: user.name,
+    };
     Response(res)
       .status(201)
       .body({
         accessToken,
-        role: user.role,
+        user: userData,
       })
       .send();
   };
@@ -86,7 +98,14 @@ class UserController {
   };
   getCurrentUser = async (req, res) => {
     const user = await UserService.findById(req.user._id);
-    Response(res).body(user).send();
+    const userData = {
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+      role: user.role,
+      _id: user._id,
+    };
+    Response(res).body(userData).send();
   };
   getAllUsers = async (req, res) => {
     const user = await UserService.find({
@@ -100,6 +119,51 @@ class UserController {
     if (!user) throw new HttpError(400, "No User Exists!");
 
     Response(res).body(user).send();
+  };
+
+  google = async (req, res, next) => {
+    Passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+    })(req, res, next);
+  };
+
+  googleCallback = async (req, res, next) => {
+    passport.authenticate(
+      "google",
+      { session: false },
+      async (err, userinfo) => {
+        if (err) {
+          return res.redirect("https://localhost:5173");
+        }
+
+        console.log({ userinfo });
+        const { emails, displayName } = userinfo;
+        const email = emails[0].value;
+
+        let user = await UserService.findOne({ email });
+
+        if (!user) {
+          user = await UserService.create({
+            email: email,
+            name: displayName,
+            role: "User",
+          });
+        }
+
+        const { generateToken } = user.schema.methods;
+
+        const accessToken = generateToken({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        });
+
+        return res.redirect(`http://localhost:5173?token=${accessToken}`);
+        // return res.redirect(`http://localhost:3000/?token=${accessToken}`);
+      }
+    )(req, res, next);
   };
 }
 

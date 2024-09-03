@@ -9,6 +9,10 @@ router.get("/", [Auth], UserController.getAllUsers);
 router.get("/own", [Auth], UserController.getCurrentUser);
 router.get("/:userId", [Auth], UserController.getUserDetails);
 
+//google login
+router.get("/google", UserController.google);
+router.get("/google/callback", UserController.googleCallback);
+
 //post requests
 router.post("/login", UserController.loginViaPassword);
 router.post("/create", UserController.createNewUser);

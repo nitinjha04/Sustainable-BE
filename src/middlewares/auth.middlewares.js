@@ -2,16 +2,25 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = process.env;
 
 module.exports.Auth = async (req, res, next) => {
-  const token = req.headers["authorization"].split(" ")[1];
-  // console.info({token})
-  if (token && token === "null") {
+  const token = req.headers["authorization"];
+
+  if (!token) {
     return res.status(401).send({
       error: true,
       result: null,
       message: "UnAuthorized",
     });
   }
-  const decodedData = jwt.verify(token, JWT_SECRET);
+  const splitToken = token.split(" ")[1];
+  // console.info({token})
+  if (splitToken && splitToken === "null") {
+    return res.status(401).send({
+      error: true,
+      result: null,
+      message: "UnAuthorized",
+    });
+  }
+  const decodedData = jwt.verify(splitToken, JWT_SECRET);
   req.user = decodedData;
 
   console.info("<------------Authentication--------->");
