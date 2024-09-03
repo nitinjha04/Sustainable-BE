@@ -16,7 +16,7 @@ const { default: axios } = require("axios");
 //Routers
 const { UserRouter } = require("../routes/users.routes");
 const { CommentRouter } = require("../routes/comment.routes");
-const { ContentRouter } = require("../routes/Content.routes");
+const { ContentRouter } = require("../routes/content.routes");
 
 module.exports = (app) => {
   app.use(express.json({ limit: "9999000009mb" }));
