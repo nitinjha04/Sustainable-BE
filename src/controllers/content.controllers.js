@@ -5,25 +5,8 @@ const { ContentService } = require("../services/content.service");
 
 class ContentController {
   create = async (req, res) => {
-    // const authorId = "66d423a81c2dccae5be0e42a";
     const content = await ContentService.create({ ...req.body });
     Response(res).body(content).send();
-
-    // for (const con of req.body) {
-    //   const authorId = "66d423a81c2dccae5be0e42a";
-    //   // const content = await ContentService.create({ ...con, authorId });
-    //   const c = await ContentService.find();
-    //   for (const p of c) {
-    //     const content = await ContentService.findByIdAndUpdate(p._id, {
-    //       thumbnail: con.thumbnail,
-    //       title: con.title,
-    //       description: con.description,
-    //       price: con.price,
-
-    //     });
-    //   }
-    // }
-    // Response(res).body("done").send();
   };
   getAll = async (req, res) => {
     const { category, type } = req.query;
