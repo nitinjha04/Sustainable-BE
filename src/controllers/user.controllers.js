@@ -3,7 +3,7 @@ const HasherHelper = require("../helpers/Hasher.helper");
 const HttpError = require("../helpers/HttpError.helpers");
 const Response = require("../helpers/Response.helpers");
 const { UserService } = require("../services/user.service");
-const { Passport } = require("passport");
+const passport = require("passport");
 require("../passport/auth");
 
 const { JWT_EMAIL_VERIFY_SECRET } = process.env;
