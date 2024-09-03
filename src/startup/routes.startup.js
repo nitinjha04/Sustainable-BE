@@ -4,6 +4,8 @@ const morgan = require("morgan"); // for consoling api request calls
 const helmet = require("helmet"); // secures connection by adding additional header
 const cors = require("cors"); // handling cors errors
 const multer = require("multer");
+const passport = require("passport");
+var session = require("express-session");
 
 const ErrorHandler = require("../middlewares/error.middlewares"); // error handler for routes, since we will continue to next route upon request
 const { uploadOnCloudinary } = require("../utils/cloudinary");
@@ -25,6 +27,18 @@ module.exports = (app) => {
   app.use(helmet());
   app.use(cors());
 
+  app.use(
+    session({
+      secret: "secret",
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: true },
+    })
+  );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   //start of routes
   app.use("/api/users", UserRouter);
   app.use("/api/comment", CommentRouter);
@@ -36,7 +50,7 @@ module.exports = (app) => {
 
     try {
       const result = await uploadOnCloudinary(req.file.buffer, "sustainable");
-      console.log({result})
+      console.log({ result });
       res.json({
         error: false,
         message: "File uploaded successfully",

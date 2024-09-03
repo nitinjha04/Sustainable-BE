@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const HasherHelper = require("../helpers/Hasher.helper");
 const HttpError = require("../helpers/HttpError.helpers");
 const Response = require("../helpers/Response.helpers");
@@ -6,7 +5,6 @@ const { UserService } = require("../services/user.service");
 const passport = require("passport");
 require("../passport/auth");
 
-const { JWT_EMAIL_VERIFY_SECRET } = process.env;
 
 class UserController {
   createNewUser = async (req, res) => {
@@ -124,7 +122,7 @@ class UserController {
   };
 
   google = async (req, res, next) => {
-    Passport.authenticate("google", {
+    passport.authenticate("google", {
       scope: ["profile", "email"],
       session: false,
     })(req, res, next);
