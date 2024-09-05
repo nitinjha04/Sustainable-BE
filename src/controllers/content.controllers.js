@@ -34,7 +34,13 @@ class ContentController {
     Response(res).body(content).send();
   };
   getOwn = async (req, res) => {
-    const content = await ContentService.find({ authorId: req.user._id });
+    const { category, type } = req.query;
+    const filter = {
+      authorId: req.user._id,
+    };
+    if (category) filter.category = category;
+    if (type) filter.type = type;
+    const content = await ContentService.find(filter);
     Response(res).body(content).send();
   };
   update = async (req, res) => {
