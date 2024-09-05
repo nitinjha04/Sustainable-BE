@@ -33,6 +33,10 @@ class ContentController {
       .select("-__v");
     Response(res).body(content).send();
   };
+  getOwn = async (req, res) => {
+    const content = await ContentService.find({ authorId: req.user._id });
+    Response(res).body(content).send();
+  };
   update = async (req, res) => {
     const { id, liked, userId, ...otherFields } = req.body;
     let updateQuery = { ...otherFields };
