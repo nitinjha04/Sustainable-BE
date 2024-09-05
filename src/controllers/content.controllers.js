@@ -44,24 +44,9 @@ class ContentController {
     Response(res).body(content).send();
   };
   update = async (req, res) => {
-    const { id, liked, userId, ...otherFields } = req.body;
-    let updateQuery = { ...otherFields };
-
-    if (liked) {
-      updateQuery = {
-        $addToSet: { likedIds: userId },
-      };
-    } else if (!liked) {
-      updateQuery = {
-        $pull: { likedIds: userId },
-      };
-    }
-
     const content = await ContentService.findByIdAndUpdate(
-      id,
-      {
-        ...updateQuery,
-      },
+      req.params.id,
+      { ...req.body },
       { new: true }
     );
     if (!content) {

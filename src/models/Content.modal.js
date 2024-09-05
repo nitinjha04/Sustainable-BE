@@ -40,7 +40,13 @@ const Schema = new mongoose.Schema(
       max: 5,
       default: 0,
     },
-    tips: [],
+    tips: [
+      {
+        content: {
+          type: String,
+        },
+      },
+    ],
     description: {
       type: String,
       required: true,

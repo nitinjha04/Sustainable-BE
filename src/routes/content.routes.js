@@ -12,7 +12,7 @@ router.get("/:id", ContentController.getById);
 //post requests
 router.post("/", ContentController.create);
 router.post("/like", [Auth], ContentController.like);
-router.post("/:id", [Auth], ContentController.update);
+router.put("/:id", [Auth], ContentController.update);
 
 //put requests
 router.delete("/:id", [Auth], ContentController.delete);
